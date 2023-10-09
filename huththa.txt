@@ -1,0 +1,156 @@
+
+***Basic configurations***
+Configure Hostname:hostname [R1]
+Configure Console Password:line console 0
+			password [1234]
+			login
+
+ EXEC mode password: enable secret cisco
+Configure Domain Name: ip domain-name [nst22902.com]
+configure ssh: ip ssh version 2
+configure ssh username and modulus bus:
+		username root secret cisco
+		crypto key generate rsa general-key modulus 1024
+
+configure vty lines: line vty 0 15
+		transport input ssh
+		login local
+
+use exec timeout: exec-timeout [360]
+encrypt all: service password-encryption
+
+banner : banner motd # Authorized only #
+
+
+***vlan ***
+exec mode-conf t
+create vlan - vlan 10
+	      name management
+exit global config- end
+save         - write memory
+
+assign ports - conf t
+		interface range [fastEthernet 0/1  -  8]
+		switchport mode access
+		switchport access vlan [10]
+		end
+		write memory
+
+create subinterfaces - conf t
+		interface [gigabitEthernet0/0/0.10]
+		encapsulation dot1Q [10]
+		ip address [192.168.1.1 255.255.255.0]
+		end
+
+configure trunk interfaces(on switches)- interface range FastEathernet0/24
+			//switchport trunk encapsulation dot1Q 
+			switchport mode trunk
+			switchport trunk native vlan 99
+			end
+
+Define DHCP pools for each network - ip dhcp poolNET[-10]
+			network [192.168.1.0 255.255.255.0]
+			default-router [192.168.1.1]
+			dns-server [192.168.100.2]
+			//excluded address [192.168.1.1 255.255.255.0]
+			end
+
+ip helper on interface - interface GigabitEthernet0/0/1
+		ip helper-address 192.168.1.1
+		end
+
+***ospf***
+Access the Router's CLI: 
+Enter Global Configuration Mode:Router> enable
+Router# configure terminal
+Router(config)#
+
+\Configure OSPF Process:
+Router(config)# router ospf [process-id]
+
+Specify Router ID:
+Router(config-router)# router-id [router-id]
+
+Define OSPF Areas:
+Router(config-router)# network [network-address] [wildcard-mask] area [area-id]
+
+Enable OSPF on Interfaces:
+Router(config-router)# passive-interface [interface]
+
+Set OSPF Authentication (Optional):
+Router(config-router)# ip ospf authentication message-digest
+Router(config-router)# ip ospf message-digest-key [key-id] md5 [key]
+
+Exit OSPF Configuration Mode:
+Router(config-router)# exit
+
+ Exit Global Configuration Mode:
+Router(config)# exit
+
+Save Configuration:
+Router# write memory
+
+
+***NAT/PAT****
+Enter Global Configuration Mode: Router> enable
+Router# configure terminal
+Router(config)#
+
+Configure NAT and PAT:
+Router(config)# ip nat inside source list [ACL-number] interface [interface-type] [interface-number] overload
+
+Create an ACL to Specify What Traffic to Translate:
+Router(config)# access-list [ACL-number] permit [source-network] [source-wildcard]
+
+Apply NAT to the Inside Interface:
+Router(config)# interface [interface-type] [interface-number]
+Router(config-if)# ip nat inside
+
+Apply NAT to the Outside Interface:
+Router(config-if)# exit
+Router(config)# interface [interface-type] [interface-number]
+Router(config-if)# ip nat outside
+
+Exit Configuration Mode:
+Router(config-if)# exit
+Router(config)#
+
+Router(config)# exit
+Router# write memory
+
+
+*****ACL*****
+Enter Global Configuration Mode:
+Router> enable
+Router# configure terminal
+Router(config)#
+
+Create an Extended ACL:
+Router(config)# access-list [ACL-number] [permit|deny] [protocol] [source] [source-wildcard] [destination] [destination-wildcard]
+
+example: Router(config)# access-list 101 permit tcp 192.168.1.0 0.0.0.255 any eq 80//
+
+
+Apply the ACL to an Interface Inbound or Outbound:
+For inbound:
+Router(config)# interface [interface-type] [interface-number]
+Router(config-if)# ip access-group [ACL-number] in
+For outbound:
+Router(config)# interface [interface-type] [interface-number]
+Router(config-if)# ip access-group [ACL-number] out
+
+Exit Configuration Mode:
+Router(config-if)# exit
+Router(config)#
+
+Save Configuration:
+Router(config)# exit
+Router# write memory
+
+
+
+
+
+
+
+			
